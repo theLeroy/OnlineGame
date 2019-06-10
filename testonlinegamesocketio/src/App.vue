@@ -27,6 +27,7 @@
 
 <script>
 import HelloWorld from './components/HelloWorld.vue'
+import socket from 'socket'
 
 export default {
   name: 'app',
@@ -34,39 +35,40 @@ export default {
     HelloWorld
   },
   data: {
-      messages: [],
-      message: '',
-      username: '',
-      state: 0
+    messages: [],
+    message: '',
+    username: '',
+    state: 0
+  },
+  methods: {
+    sendMessage: function () {
+      socket.emit('message', this.message);
+      this.message = '';
     },
-    methods: {
-      sendMessage: function () {
-        socket.emit('message', this.message);
-        this.message = '';
-      },
-      setUsername: function () {
-        socket.emit('join', this.username);
-        this.username = '';
-        this.state = 1;
-      },
-      continueWithoutUsername: function () {
-        socket.emit('join', null);
-        this.state = 1;
-      }
+    setUsername: function () {
+      socket.emit('join', this.username);
+      this.username = '';
+      this.state = 1;
     },
-    created: function () {
-      socket = io();
-    },
-    mounted: function () {
-      socket.on('message', function (message) {
-        app.messages.push(message);
-        // this needs to be done AFTER vue updates the page!!
-        app.$nextTick(function () {
-          var messageBox = document.getElementById('chatbox');
-          messageBox.scrollTop = messageBox.scrollHeight;
-        });
-      });
+    continueWithoutUsername: function () {
+      socket.emit('join', null);
+      this.state = 1;
     }
+  },
+  created: function () {
+    socket = io();
+  },
+  mounted: function () {
+    socket.on('message', function (message) {
+      app.messages.push(message);
+      // this needs to be done AFTER vue updates the page!!
+      app.$nextTick(function () {
+        var messageBox = document.getElementById('chatbox');
+        messageBox.scrollTop = messageBox.scrollHeight;
+      });
+    });
+  }
+
 }
 </script>
 
